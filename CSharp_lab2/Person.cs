@@ -16,6 +16,7 @@ namespace CSharp_lab2
         readonly string _sunSign;
         readonly string _chinesseSign;
         readonly bool isBirthday;
+        private int age;
 
         public string FirstName
         {
@@ -65,6 +66,14 @@ namespace CSharp_lab2
             }
         }
 
+        public bool IsAdult
+        {
+            get
+            {
+                return true; /// ???????
+            }
+        }
+
         //public Person(string firstName, string lastName, string emailAdress, DateTime dateBirth)
         //{
         //    _firstName = firstName;
@@ -89,16 +98,6 @@ namespace CSharp_lab2
         //    _dateBirth = dateBirth;
         //}
 
-        public string IsAdult
-        {
-            get
-            {
-                return null; // countAgeOfUser > 18.....;
-            }
-            //set
-            //{
-            //    _login = value;
-            //}
-        }
+       
     }
 }

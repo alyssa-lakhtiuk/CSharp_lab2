@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Windows;
+using System.ComponentModel;
+using System.Windows.Input;
 
 namespace CSharp_lab2
 {
-    public class DateInfo 
+    public class DateInfo : INotifyPropertyChanged
     {
         private Person _person = new Person();
         private DateTime selectedDateFromUser;
         private RelayCommand<object> _proceedCommand;
+        private RelayCommand<object> _cancelCommand;
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public RelayCommand<object> ProceedCommand
         {
@@ -66,6 +71,37 @@ namespace CSharp_lab2
             }
         }
 
+        public bool IsAdult
+        {
+            get
+            {
+                return Int32.Parse( countAgeOfUser()) >= 18;
+            }
+        }
+
+        public string SunSign
+        {
+            get
+            {
+                return countWestAstroSign();
+            }
+        }
+
+        public string ChineseSign
+        {
+            get
+            {
+                return countEastAstroSign();
+            }
+        }
+
+        public int Age
+        {
+            get
+            {
+                return Int32.Parse(countAgeOfUser());
+            }
+        }
         private bool CanExecute(object obj)
         {
             return !String.IsNullOrWhiteSpace(_person.FirstName) && !String.IsNullOrWhiteSpace(_person.LastName);
@@ -131,7 +167,7 @@ namespace CSharp_lab2
         {
             DateTime? todayDate = DateTime.Today;
             int age = todayDate.Value.Year - selectedDateFromUser.Year;
-            if (todayDate.Value.Day < selectedDateFromUser.Day)
+            if ((todayDate.Value.Day < selectedDateFromUser.Day && todayDate.Value.Month == selectedDateFromUser.Month) || (todayDate.Value.Month < selectedDateFromUser.Month))
             {
                 age--;
             }
@@ -195,16 +231,26 @@ namespace CSharp_lab2
             bool check = dateValid();
             if (check)
             {
-                AgeOfUser.Text = countAgeOfUser();
-                WestSign.Text = countWestAstroSign();
-                EastSign.Text = countEastAstroSign();
+                //PropertyChanged?.Invoke(this, nameof(SunSign));
+                //AgeOfUser.Text = countAgeOfUser();
+                //WestSign.Text = countWestAstroSign();
+                //EastSign.Text = countEastAstroSign();
             }
         }
 
-        private void update(object? sender, PropertyChangedEventArgs e)
+        public RelayCommand<object> CancelCommand
         {
-
+            get
+            {
+                return _cancelCommand ??= new RelayCommand<object>(_ => Environment.Exit(0));
+            }
         }
+
+        //private void update(object? sender, PropertyChangedEventArgs e)
+        //{
+        //    OnPropertyChanged?.Invoke(this, new(nameof()));
+
+        //}
         //private void proceed(object? sender, DependencyPropertyChangedEventArgs e)
         //{
         //    if(e.Property == nameof()
