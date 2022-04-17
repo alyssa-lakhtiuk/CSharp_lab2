@@ -21,20 +21,16 @@ namespace CSharp_lab2
             MessageBox.Show(selectedDate.Value.Date.ToShortDateString());
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            Environment.Exit(0);
-        }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
-        {
-            bool check = dateFromUser.dateValid();
-            if (check)
-            {
-                AgeOfUser.Text = dateFromUser.countAgeOfUser();
-                WestSign.Text = dateFromUser.countWestAstroSign();
-                EastSign.Text = dateFromUser.countEastAstroSign();
-            }
-        }
+        //private void Button_Click_1(object sender, RoutedEventArgs e)
+        //{
+        //    bool check = dateFromUser.dateValid();
+        //    if (check)
+        //    {
+        //        AgeOfUser.Text = dateFromUser.countAgeOfUser();
+        //        WestSign.Text = dateFromUser.countWestAstroSign();
+        //        EastSign.Text = dateFromUser.countEastAstroSign();
+        //    }
+        //}
     }
 }

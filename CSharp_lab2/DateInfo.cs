@@ -2,17 +2,52 @@
 using System.Windows;
 using System.ComponentModel;
 using System.Windows.Input;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace CSharp_lab2
 {
-    public class DateInfo : INotifyPropertyChanged
+    public class DateInfo : INotifyPropertyChanged, ILoaderOwner
     {
         private Person _person = new Person();
         private DateTime selectedDateFromUser;
         private RelayCommand<object> _proceedCommand;
         private RelayCommand<object> _cancelCommand;
+        private bool _isAdult;
+        private string _sunSign;
+        private string _chinesseSign;
+        private bool _isBirthday;
+        private int _age;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        private bool _isEnabled = true;
+        private Visibility _loaderVisibility = Visibility.Collapsed;
+
+        public bool IsEnabled
+        {
+            get
+            {
+                return _isEnabled;
+            }
+            set
+            {
+                _isEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public Visibility LoaderVisibility
+        {
+            get
+            {
+                return _loaderVisibility;
+            }
+            set
+            {
+                _loaderVisibility = value;
+                OnPropertyChanged();
+            }
+        }
 
         public RelayCommand<object> ProceedCommand
         {
@@ -21,7 +56,6 @@ namespace CSharp_lab2
                 return _proceedCommand ?? new RelayCommand<object>(_ => proceed(), CanExecute);
             }
         }
-
 
         public string FirstName
         {
@@ -75,15 +109,37 @@ namespace CSharp_lab2
         {
             get
             {
-                return Int32.Parse( countAgeOfUser()) >= 18;
+                return _age >= 18;
+            }
+            set
+            {
+                _isAdult = value;
             }
         }
+
+        public bool IsBirthday
+        {
+            get
+            {
+                return _isBirthday;
+            }
+            set
+            {
+                _isBirthday = value;
+            }
+        }
+
 
         public string SunSign
         {
             get
             {
-                return countWestAstroSign();
+                return _sunSign;
+            }
+            set
+            {
+                _sunSign = value;
+                OnPropertyChanged();
             }
         }
 
@@ -91,7 +147,12 @@ namespace CSharp_lab2
         {
             get
             {
-                return countEastAstroSign();
+                return _chinesseSign;
+            }
+            set
+            {
+                _chinesseSign = value;
+                OnPropertyChanged();
             }
         }
 
@@ -99,7 +160,12 @@ namespace CSharp_lab2
         {
             get
             {
-                return Int32.Parse(countAgeOfUser());
+                return _age;
+            }
+            set
+            {
+                _age = value;
+                OnPropertyChanged();
             }
         }
         private bool CanExecute(object obj)
@@ -157,25 +223,27 @@ namespace CSharp_lab2
             int difference = todayDate.Year - SelectedDateFromUser.Year;
             if (difference > 135 || difference < 0)
             {
-               MessageBox.Show("The date is wrong");
-               return false;
+                MessageBox.Show("The date is wrong");
+                return false;
             }
             return true;
         }
 
-        public string countAgeOfUser()
+        public void countAgeOfUser()
         {
+            Thread.Sleep(1500);
             DateTime? todayDate = DateTime.Today;
             int age = todayDate.Value.Year - selectedDateFromUser.Year;
             if ((todayDate.Value.Day < selectedDateFromUser.Day && todayDate.Value.Month == selectedDateFromUser.Month) || (todayDate.Value.Month < selectedDateFromUser.Month))
             {
                 age--;
             }
-            return age.ToString();
+            Age = age;
         }
 
-        public string countWestAstroSign()
+        public void countWestAstroSign()
         {
+            Thread.Sleep(2000);
             int month = SelectedDateFromUser.Month;
             int day = SelectedDateFromUser.Day;
             WestSigns astroSign;
@@ -190,8 +258,8 @@ namespace CSharp_lab2
                 astroSign = WestSigns.Gemini;
             } else if ((month == 6 && day >= 22) || (month == 7 && day <= 22))
             {
-                astroSign = WestSigns.Cancer; 
-            } else if ((month == 7 && day >= 23) || (month == 8  && day <= 22))
+                astroSign = WestSigns.Cancer;
+            } else if ((month == 7 && day >= 23) || (month == 8 && day <= 22))
             {
                 astroSign = WestSigns.Leo;
             } else if ((month == 8 && day >= 23) || (month == 9 && day <= 22))
@@ -216,25 +284,52 @@ namespace CSharp_lab2
             {
                 astroSign = WestSigns.Pisces;
             }
-            return astroSign.ToString();
+            SunSign = astroSign.ToString();
         }
 
-        public string countEastAstroSign()
+        public void countEastAstroSign()
         {
-            int numOfSign = (SelectedDateFromUser.Year - 1900) % 12;
+            Thread.Sleep(2000);
+            int numOfSign = (SelectedDateFromUser.Year - 1900) % 12 + 1;
             EastSigns astroSign = (EastSigns)numOfSign;
-            return astroSign.ToString();
+            ChineseSign = astroSign.ToString();
         }
 
-        private void proceed()
+        public void isBirtDayToday()
+        {
+            Thread.Sleep(1000);
+            DateTime todayDate = DateTime.Today;
+            if (selectedDateFromUser.Day == todayDate.Day && selectedDateFromUser.Month == todayDate.Month)
+            {
+                MessageBox.Show("Happy Birthady! Be Happy and free!");
+                IsBirthday = true;
+                return;
+            }
+            else IsBirthday = false;
+        }
+
+        private async void proceed()
         {
             bool check = dateValid();
             if (check)
             {
-                //PropertyChanged?.Invoke(this, nameof(SunSign));
-                //AgeOfUser.Text = countAgeOfUser();
-                //WestSign.Text = countWestAstroSign();
-                //EastSign.Text = countEastAstroSign();
+                try
+                {
+                    //LoaderManager.Instance.ShowLoader();
+                    await Task.Run(() => countEastAstroSign());
+                    await Task.Run(() => countAgeOfUser());
+                    await Task.Run(() => countWestAstroSign());
+                    await Task.Run(() => isBirtDayToday());
+
+
+                } catch (Exception ex)
+                {
+                    MessageBox.Show($"Something went wrong: {ex.Message}");
+                    return;
+                } finally
+                {
+                    //LoaderManager.Instance.HideLoader();
+                }
             }
         }
 
@@ -246,15 +341,22 @@ namespace CSharp_lab2
             }
         }
 
+
         //private void update(object? sender, PropertyChangedEventArgs e)
         //{
-        //    OnPropertyChanged?.Invoke(this, new(nameof()));
+        //    if(e.PropertyName == nameof(SelectedDateFromUser))
+        //    {
+        //        //PropertyChanged?.Invoke(this, nameof(ChineseCalendar));
+        //    }
+        //}
 
-        //}
-        //private void proceed(object? sender, DependencyPropertyChangedEventArgs e)
-        //{
-        //    if(e.Property == nameof()
-        //}
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        
     }
-
 }
